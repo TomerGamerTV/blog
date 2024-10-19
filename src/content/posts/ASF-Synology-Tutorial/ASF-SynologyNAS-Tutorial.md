@@ -5,6 +5,6 @@ description: 'A guide on how to install ArchiSteamFarm on SynologyNAS'
 image: ''
 tags: ["Guide", "Tutorial", "SynologyNAS", "Steam", "Docker"]
 category: 'Guides'
-draft: false 
+draft: false
 lang: ''
 ---

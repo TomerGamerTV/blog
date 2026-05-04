@@ -3,15 +3,21 @@ import type { BlogPostData } from '@/types/config'
 import I18nKey from '@i18n/i18nKey'
 import { i18n } from '@i18n/translation'
 
+type BlogPostEntry = {
+  body: string
+  data: Omit<BlogPostData, 'body'>
+  slug: string
+}
+
 export async function getSortedPosts(): Promise<
-  { body: string, data: BlogPostData; slug: string }[]
+  BlogPostEntry[]
 > {
-  const allBlogPosts = (await getCollection('posts', ({ data }) => {
+  const allBlogPosts = (await getCollection('posts', ({ data }: BlogPostEntry) => {
     return import.meta.env.PROD ? data.draft !== true : true
-  })) as unknown as { body: string, data: BlogPostData; slug: string }[]
+  })) as unknown as BlogPostEntry[]
 
   const sorted = allBlogPosts.sort(
-    (a: { data: BlogPostData }, b: { data: BlogPostData }) => {
+    (a: BlogPostEntry, b: BlogPostEntry) => {
       const dateA = new Date(a.data.published)
       const dateB = new Date(b.data.published)
       return dateA > dateB ? -1 : 1
@@ -36,12 +42,12 @@ export type Tag = {
 }
 
 export async function getTagList(): Promise<Tag[]> {
-  const allBlogPosts = await getCollection<'posts'>('posts', ({ data }) => {
+  const allBlogPosts = await getCollection('posts', ({ data }: BlogPostEntry) => {
     return import.meta.env.PROD ? data.draft !== true : true
-  })
+  }) as unknown as BlogPostEntry[]
 
   const countMap: { [key: string]: number } = {}
-  allBlogPosts.map((post: { data: { tags: string[] } }) => {
+  allBlogPosts.map((post: BlogPostEntry) => {
     post.data.tags.map((tag: string) => {
       if (!countMap[tag]) countMap[tag] = 0
       countMap[tag]++
@@ -62,11 +68,11 @@ export type Category = {
 }
 
 export async function getCategoryList(): Promise<Category[]> {
-  const allBlogPosts = await getCollection<'posts'>('posts', ({ data }) => {
+  const allBlogPosts = await getCollection('posts', ({ data }: BlogPostEntry) => {
     return import.meta.env.PROD ? data.draft !== true : true
-  })
+  }) as unknown as BlogPostEntry[]
   const count: { [key: string]: number } = {}
-  allBlogPosts.map((post: { data: { category: string | number } }) => {
+  allBlogPosts.map((post: BlogPostEntry) => {
     if (!post.data.category) {
       const ucKey = i18n(I18nKey.uncategorized)
       count[ucKey] = count[ucKey] ? count[ucKey] + 1 : 1
